@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-     WORKING_DIRECTORY: ./configuration-values-json/src/configuration-values-json
+     WORKING_DIRECTORY: ./src/configuration-values-webapp
      OCTOPUS_SPACE_NAME: Spaces-64
      OCTOPUS_PROJECT_NAME: ConfigurationValuesJSON
      OCTO_SAMPLES_URL: ${{ secrets.OCTOPUS_SERVER_URL }}
