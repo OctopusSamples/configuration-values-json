@@ -27,7 +27,7 @@ jobs:
       uses: nelonoel/branch-name@v1
     - name: GitVersion
       id: gitversion
-      uses: nmcc/actions/gitversion
+      uses: nmcc/actions/gitversion@v1
       with:
         path-to-gitversion: packages/GitVersion.CommandLine/tools/GitVersion.exe
     - name: Setup .NET Core
