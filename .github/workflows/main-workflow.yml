@@ -1,4 +1,4 @@
-name: .NET Core 
+name: .NET Core
 
 on:
   push:
@@ -25,11 +25,10 @@ jobs:
     - uses: nelonoel/branch-name@v1
     - name: Get branch name
       uses: nelonoel/branch-name@v1
-    - name: GitVersion
-      id: gitversion
-      uses: nmcc/actions-gitversion@v1
+    - name: Get Git Version
+      uses: docker://gittools/gitversion:5.0.2-beta1-27-linux-centos-7-netcoreapp2.2
       with:
-        path-to-gitversion: packages/GitVersion.CommandLine/tools/GitVersion.exe
+        args: /github/workspace /nofetch /exec /bin/sh /execargs "-c \"echo $GitVersion_FullSemVer > /github/workspace/version.txt\""
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
@@ -47,14 +46,14 @@ jobs:
         unzip /opt/octo/octopus.zip
         chmod +x /opt/octo/octo
         echo "version number"
-        echo ${{ steps.gitversion.outputs.SemVer }}
+        echo $(cat ${{ github.workspace }}/version.txt)
     - name: Pack Application
       working-directory: ${{env.WORKING_DIRECTORY}}
       run: >-
         /opt/octo/octo pack .
         --basePath bin/Release/netcoreapp3.1/
         --id ${{env.PACKAGE_NAME}}
-        --version ${{ steps.gitversion.outputs.SemVer }}
+        --version $(cat ${{ github.workspace }}/version.txt)
         --format zip
     - name: Push to Octopus
       working-directory: ${{env.WORKING_DIRECTORY}} 
@@ -63,7 +62,7 @@ jobs:
         --space ${{ env.OCTOPUS_SPACE_NAME }}
         --server ${{ env.OCTO_SAMPLES_URL }}
         --apiKey ${{ secrets.OCTOPUS_API_KEY }}
-        --package ${{env.PACKAGE_NAME}}.${{ steps.gitversion.outputs.SemVer }}.zip
+        --package ${{env.PACKAGE_NAME}}.$(cat ${{ github.workspace }}/version.txt).zip
         --overwrite-mode IgnoreIfExists
     - name: Build info to Octopus
       working-directory: ${{env.WORKING_DIRECTORY}} 
@@ -112,7 +111,7 @@ jobs:
         /opt/octo/octo build-information
         --package-id="${{env.PACKAGE_NAME}}" 
         --file="build-info.json" 
-        --version="${{ steps.gitversion.outputs.SemVer }}" 
+        --version="$(cat ${{ github.workspace }}/version.txt)" 
         --server="${{env.OCTO_SAMPLES_URL}}"
         --apiKey="${{env.OCTOPUS_API_KEY}}"
         --space="${{env.OCTOPUS_SPACE_NAME}}"
