@@ -1,0 +1,118 @@
+name: .NET Core
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    env:
+     WORKING_DIRECTORY: ./configuration-values-json
+     OCTOPUS_SPACE_NAME: Spaces-64
+     OCTOPUS_PROJECT_NAME: ConfigurationValuesJSON
+     OCTO_SAMPLES_URL: ${{ secrets.OCTOPUS_SERVER_URL }}
+     OCTOPUS_API_KEY: ${{ secrets.OCTOPUS_API_KEY }}
+     PACKAGE_NAME: ConfigurationValuesJSON
+    steps:
+    - uses: actions/checkout@v2
+    - run: |
+       git fetch --prune --unshallow
+    - uses: nelonoel/branch-name@v1
+    - name: Get branch name
+      uses: nelonoel/branch-name@v1
+    - name: Get Git Version
+      uses: docker://gittools/gitversion:5.0.2-beta1-27-linux-centos-7-netcoreapp2.2
+      with:
+        args: /github/workspace /nofetch /exec /bin/sh /execargs "-c \"echo $GitVersion_FullSemVer > /github/workspace/version.txt\""
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.301
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: Extract Octopus Tools
+      working-directory: ${{env.WORKING_DIRECTORY}}
+      run: |
+        mkdir /opt/octo
+        cd /opt/octo
+        wget -O /opt/octo/octopus.zip https://download.octopusdeploy.com/octopus-tools/7.3.7/OctopusTools.7.3.7.portable.zip
+        unzip /opt/octo/octopus.zip
+        chmod +x /opt/octo/octo
+        echo "version number"
+        echo $(cat ${{ github.workspace }}/version.txt)
+    - name: Pack Application
+      working-directory: ${{env.WORKING_DIRECTORY}}
+      run: >-
+        /opt/octo/octo pack .
+        --basePath bin/Release/netcoreapp3.1/
+        --id ${{env.PACKAGE_NAME}}
+        --version $(cat ${{ github.workspace }}/version.txt)
+        --format zip
+    - name: Push to Octopus
+      working-directory: ${{env.WORKING_DIRECTORY}} 
+      run: >-
+        /opt/octo/octo push
+        --space ${{ env.OCTOPUS_SPACE_NAME }}
+        --server ${{ env.OCTO_SAMPLES_URL }}
+        --apiKey ${{ secrets.OCTOPUS_API_KEY }}
+        --package ${{env.PACKAGE_NAME}}.$(cat ${{ github.workspace }}/version.txt).zip
+        --overwrite-mode IgnoreIfExists
+    - name: Build info to Octopus
+      working-directory: ${{env.WORKING_DIRECTORY}} 
+      run: >-
+        # install jq
+        apt-get install jq
+        
+        template='{
+            "BuildEnvironment" : "GitHub Actions",
+            "Branch" : $branchName,
+            "BuildNumber" : $buildNumber,
+            "BuildUrl" : $buildUrl,
+            "VcsCommitNumber" : $commitNumber,
+            "VcsType" : "Git",
+            "VcsRoot" : $vcsRoot,
+            "Commits" : [
+              {
+                "Id" : $commitId,
+                "LinkUrl" : $commitLinkUrl,
+                "Comment" : $commitMessage,
+              }
+            ]
+          }' 
+        
+        echo "$template" > template.json
+
+        commitMsg=$(git log -1 --pretty=reference)
+        
+        echo "Here's the commit message:"
+
+        echo $commitMsg
+
+        echo "thank you"
+
+        jq -n --from-file template.json \
+          --arg branchName '${{env.BRANCH_NAME}}' \
+          --arg buildNumber '${{github.run_number}}' \
+          --arg buildUrl 'https://github.com/${{github.respository}}/actions/runs/${{github.run_id}}' \
+          --arg commitNumber '${{github.sha}}' \
+          --arg vcsRoot 'https://github.com/${{github.repository}}.git' \
+          --arg commitId '${{github.sha}}' \
+          --arg commitLinkUrl 'https://github.com/${{github.sha}}/commit/${{github.sha}}' \
+          --arg commitMessage $commitMsg \
+          > build-info.json
+
+        /opt/octo/octo build-information
+        --package-id="${{env.PACKAGE_NAME}}" 
+        --file="build-info.json" 
+        --version="$(cat ${{ github.workspace }}/version.txt)" 
+        --server="${{env.OCTO_SAMPLES_URL}}"
+        --apiKey="${{env.OCTOPUS_API_KEY}}"
+        --space="${{env.OCTOPUS_SPACE_NAME}}"
+        --overwrite-mode=OverwriteExisting
