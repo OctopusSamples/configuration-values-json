@@ -1,0 +1,28 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+@using Microsoft.Extensions.Options;
+@inject IOptions<Settings.AppSettings> Settings
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>If you are seeing this, then <strong>Congratulations!</strong> <br/> You've got the example application running. </p>
+    
+    <table class="table">
+        <tr>
+            <th scope="col">Config Item</th>
+            <th scope="col">Value</th>
+        </tr>
+
+@foreach (var settingValue in ViewData["settingValues"] as Dictionary<String,String>)
+{
+        <tr>
+            <td scope="col">@settingValue.Key </td> 
+            <td scope="col">@settingValue.Value</td>
+        </tr>       
+}
+    </table>
+</div>
