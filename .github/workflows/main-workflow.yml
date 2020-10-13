@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-     WORKING_DIRECTORY: /src/configuration-values-webapp
+     WORKING_DIRECTORY: ./src/configuration-values-webapp
      OCTOPUS_SPACE_NAME: Spaces-64
      OCTOPUS_PROJECT_NAME: ConfigurationValuesJSON
      OCTO_SAMPLES_URL: ${{ secrets.OCTOPUS_SERVER_URL }}
@@ -35,10 +35,12 @@ jobs:
       with:
         dotnet-version: 3.1.301
     - name: Install dependencies
+      working-directory: ${{env.WORKING_DIRECTORY}}
       run: |
          ls
          dotnet restore
     - name: Build
+      working-directory: ${{env.WORKING_DIRECTORY}}
       run: dotnet build --configuration Release --no-restore
     - name: Extract Octopus Tools
       working-directory: ${{env.WORKING_DIRECTORY}}
