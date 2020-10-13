@@ -22,7 +22,7 @@ jobs:
     - uses: actions/checkout@v2
     - run: |
        git fetch --prune --unshallow
-       git branch --create-reflog main origin/main
+       git branch --create-reflog master origin/master
     - uses: nelonoel/branch-name@v1
     - name: Get branch name
       uses: nelonoel/branch-name@v1
