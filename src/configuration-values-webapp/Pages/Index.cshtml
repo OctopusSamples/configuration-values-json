@@ -21,7 +21,7 @@
 {
         <tr>
             <td scope="col">@settingValue.Key </td> 
-            <td scope="col">@settingValue.Value</td>
+            <td scope="col">@(String.IsNullOrEmpty(settingValue.Value) ? "-" : settingValue.Value)</td>
         </tr>       
 }
     </table>
