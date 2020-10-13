@@ -35,7 +35,9 @@ jobs:
       with:
         dotnet-version: 3.1.301
     - name: Install dependencies
-      run: dotnet restore
+      run: |
+         ls
+         dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Extract Octopus Tools
