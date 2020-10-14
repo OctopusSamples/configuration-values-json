@@ -59,7 +59,7 @@ jobs:
       working-directory: ${{env.WORKING_DIRECTORY}}
       run: >-
         /opt/octo/octo pack .
-        --basePath ${{env.WORKING_DIRECTORY}}/published
+        --basePath published
         --id ${{env.PACKAGE_NAME}}
         --version $(cat ${{ github.workspace }}/version.txt)
         --format zip
