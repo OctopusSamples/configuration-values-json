@@ -39,9 +39,12 @@ jobs:
       run: |
          ls
          dotnet restore
-    - name: Build
+    #- name: Build
+    #  working-directory: ${{env.WORKING_DIRECTORY}}
+    #  run: dotnet build --configuration Release --no-restore
+    - name: Publish 
       working-directory: ${{env.WORKING_DIRECTORY}}
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet publish --no-restore -o published --configuration Release 
     - name: Extract Octopus Tools
       working-directory: ${{env.WORKING_DIRECTORY}}
       run: |
