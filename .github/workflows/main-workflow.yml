@@ -41,7 +41,7 @@ jobs:
          dotnet restore
     - name: Publish 
       working-directory: ${{env.WORKING_DIRECTORY}}
-      run: dotnet publish --no-restore -o published --configuration Release 
+      run: dotnet publish --no-restore -o published --configuration Release
     - name: Extract Octopus Tools
       working-directory: ${{env.WORKING_DIRECTORY}}
       run: |
