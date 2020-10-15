@@ -13,7 +13,7 @@ jobs:
 
     env:
      WORKING_DIRECTORY: ./src/configuration-values-webapp
-     OCTOPUS_SPACE_NAME: Spaces-64
+     OCTOPUS_SPACE_NAME: Spaces-2
      OCTOPUS_PROJECT_NAME: ConfigurationValuesJSON
      OCTO_SAMPLES_URL: ${{ secrets.OCTOPUS_SERVER_URL }}
      OCTOPUS_API_KEY: ${{ secrets.OCTOPUS_API_KEY }}
@@ -39,9 +39,6 @@ jobs:
       run: |
          ls
          dotnet restore
-    #- name: Build
-    #  working-directory: ${{env.WORKING_DIRECTORY}}
-    #  run: dotnet build --configuration Release --no-restore
     - name: Publish 
       working-directory: ${{env.WORKING_DIRECTORY}}
       run: dotnet publish --no-restore -o published --configuration Release 
