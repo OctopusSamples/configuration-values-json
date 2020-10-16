@@ -60,6 +60,12 @@ jobs:
         --id ${{env.PACKAGE_NAME}}
         --version $(cat ${{ github.workspace }}/version.txt)
         --format zip
+
+        /opt/octo/octo pack .
+        --basePath ../appsettings
+        --id ${{env.PACKAGE_NAME}}AppSettings
+        --version $(cat ${{ github.workspace }}/version.txt)
+        --format zip
     - name: Push to Octopus
       working-directory: ${{env.WORKING_DIRECTORY}} 
       run: >-
@@ -68,7 +74,14 @@ jobs:
         --server ${{ env.OCTO_SAMPLES_URL }}
         --apiKey ${{ secrets.OCTOPUS_API_KEY }}
         --package ${{env.PACKAGE_NAME}}.$(cat ${{ github.workspace }}/version.txt).zip
-        --overwrite-mode IgnoreIfExists
+        --overwrite-mode OverwriteExisting
+
+        /opt/octo/octo push
+        --space ${{ env.OCTOPUS_SPACE_NAME }}
+        --server ${{ env.OCTO_SAMPLES_URL }}
+        --apiKey ${{ secrets.OCTOPUS_API_KEY }}
+        --package ${{env.PACKAGE_NAME}}AppSettings.$(cat ${{ github.workspace }}/version.txt).zip
+        --overwrite-mode OverwriteExisting
     - name: Build info to Octopus
       working-directory: ${{env.WORKING_DIRECTORY}} 
       run: >-
